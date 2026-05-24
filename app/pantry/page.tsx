@@ -2,6 +2,11 @@ import { listPantry } from "@/lib/data/pantry";
 import { deleteItemAction } from "./actions";
 import AddItemForm from "./AddItemForm";
 
+// Tell Next.js to render this page fresh on every request instead of
+// pre-rendering it once at build time. The pantry contents live in the
+// database and change as you add/remove items, so we always want current data.
+export const dynamic = "force-dynamic";
+
 // THE PANTRY PAGE.
 //
 // This is a React Server Component (the default in the App Router). Because it
