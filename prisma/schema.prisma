@@ -33,3 +33,37 @@ model PantryItem {
   // An index makes "find all items for this owner" fast once there are many rows.
   @@index([ownerId])
 }
+
+// One row per "I ate this" event — the food diary that powers the tracker.
+// We store the ABSOLUTE consumed values (computed at log time) so an entry is a
+// stable historical record, even if the source pantry item is later edited or
+// deleted.
+model ConsumptionLog {
+  id           String  @id @default(uuid())
+  ownerId      String  @default("local")
+  name         String // snapshot of the food name, e.g. "Chicken breast"
+  brand        String?
+  grams        Float // amount eaten, in grams
+  kcal         Float   @default(0) // absolute values for this serving
+  protein      Float   @default(0)
+  carbs        Float   @default(0)
+  fat          Float   @default(0)
+  pantryItemId String? // optional link back to the pantry item it came from
+
+  consumedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  // We query "entries for this owner within a date range", so index both.
+  @@index([ownerId, consumedAt])
+}
+
+// Daily nutrition targets — one row per owner (enforced by @unique on ownerId).
+model NutritionGoal {
+  id        String   @id @default(uuid())
+  ownerId   String   @unique @default("local")
+  kcal      Float?
+  protein   Float?
+  carbs     Float?
+  fat       Float?
+  updatedAt DateTime @updatedAt
+}
