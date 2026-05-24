@@ -12,11 +12,14 @@ export type PantryItem = {
   unit: string;      // free text for now: "g", "cans", "pieces"...
 
   // Optional nutrition info (per 100g), attached from OpenFoodFacts when the
-  // user picks a search result. The "?" means "this field may be absent" —
-  // items added before nutrition existed, or added by hand, simply won't have it.
-  brand?: string;
-  kcal?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
+  // user picks a search result. "?" means the field may be absent; "| null"
+  // because the database stores a missing value as NULL (which arrives in
+  // JavaScript as `null`). Allowing both keeps the type honest.
+  brand?: string | null;
+  kcal?: number | null;
+  protein?: number | null;
+  carbs?: number | null;
+  fat?: number | null;
+
+  createdAt?: Date; // set by the database; used to sort newest-first
 };

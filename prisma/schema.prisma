@@ -1,0 +1,35 @@
+// This is your Prisma schema file. It describes your database tables ("models")
+// in a simple, readable language. When you run `prisma migrate`, Prisma turns
+// this into real SQL tables and keeps them in sync.
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// One row per item in the pantry. These fields mirror the PantryItem TypeScript
+// type in lib/data/types.ts almost exactly — that's deliberate.
+model PantryItem {
+  id       String @id @default(uuid()) // primary key; auto-generated unique id
+  ownerId  String @default("local") // who owns it — "local" until we add accounts
+  name     String
+  quantity Float // Float allows decimals (e.g. 1.5 kg)
+  unit     String
+
+  // Optional nutrition info (per 100g). "?" makes the column nullable.
+  brand   String?
+  kcal    Float?
+  protein Float?
+  carbs   Float?
+  fat     Float?
+
+  createdAt DateTime @default(now()) // useful for sorting newest-first later
+
+  // An index makes "find all items for this owner" fast once there are many rows.
+  @@index([ownerId])
+}

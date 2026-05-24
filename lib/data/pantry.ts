@@ -1,28 +1,25 @@
-import { pantryItems } from "./store";
+import { prisma } from "@/lib/db/client";
 import { getCurrentOwnerId } from "@/lib/auth/context";
 import type { PantryItem } from "./types";
 
-// THE REPOSITORY.
+// THE REPOSITORY — now backed by a real Postgres database via Prisma.
 //
-// Every read/write of pantry data goes through these three functions. The rest
-// of the app (pages, forms) NEVER touches the `pantryItems` array directly.
-//
-// Why bother? Because in Phase 4 we rewrite the INSIDES of these functions to
-// talk to a real database — but their names and inputs/outputs stay identical,
-// so no page code has to change. This is the single most valuable habit in here.
-//
-// They're `async` even though an array lookup is instant, because database
-// calls ARE async. Writing them async now means the page code already does
-// `await listPantry()` and won't change when the database arrives.
+// Compare this with the previous version: the function NAMES, INPUTS, and
+// RETURN TYPES are identical. Only the bodies changed — from array operations
+// to database queries. That's why page.tsx and AddItemForm.tsx didn't need a
+// single edit. This is the entire point of routing all data access through
+// one layer.
 
-// Return every pantry item belonging to the current owner.
+// Return every pantry item belonging to the current owner, newest first.
 export async function listPantry(): Promise<PantryItem[]> {
   const ownerId = getCurrentOwnerId();
-  return pantryItems.filter((item) => item.ownerId === ownerId);
+  return prisma.pantryItem.findMany({
+    where: { ownerId }, // only this owner's rows
+    orderBy: { createdAt: "desc" },
+  });
 }
 
 // Add a new item and return the created record.
-// The nutrition fields are optional — callers can omit them.
 export async function addPantryItem(input: {
   name: string;
   quantity: number;
@@ -33,23 +30,19 @@ export async function addPantryItem(input: {
   carbs?: number;
   fat?: number;
 }): Promise<PantryItem> {
-  const newItem: PantryItem = {
-    id: crypto.randomUUID(), // built-in random unique id generator
-    ownerId: getCurrentOwnerId(),
-    ...input, // copies name, quantity, unit, and any nutrition fields provided
-  };
-  pantryItems.push(newItem);
-  return newItem;
+  const ownerId = getCurrentOwnerId();
+  return prisma.pantryItem.create({
+    data: { ownerId, ...input }, // Prisma generates the id and createdAt for us
+  });
 }
 
-// Delete an item by id — but ONLY if it belongs to the current owner.
-// (That ownership check is what makes this safe once multiple users exist.)
+// Delete an item by id — but only if it belongs to the current owner.
+// We use deleteMany (not delete) because it lets us filter on BOTH id AND
+// ownerId. That ownership check is what stops one user deleting another's row
+// once we add accounts.
 export async function deletePantryItem(id: string): Promise<void> {
   const ownerId = getCurrentOwnerId();
-  const index = pantryItems.findIndex(
-    (item) => item.id === id && item.ownerId === ownerId,
-  );
-  if (index !== -1) {
-    pantryItems.splice(index, 1); // remove 1 item at that position
-  }
+  await prisma.pantryItem.deleteMany({
+    where: { id, ownerId },
+  });
 }
