@@ -10,4 +10,13 @@ export type PantryItem = {
   name: string;      // e.g. "Spaghetti"
   quantity: number;  // e.g. 500
   unit: string;      // free text for now: "g", "cans", "pieces"...
+
+  // Optional nutrition info (per 100g), attached from OpenFoodFacts when the
+  // user picks a search result. The "?" means "this field may be absent" —
+  // items added before nutrition existed, or added by hand, simply won't have it.
+  brand?: string;
+  kcal?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 };

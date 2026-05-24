@@ -22,17 +22,21 @@ export async function listPantry(): Promise<PantryItem[]> {
 }
 
 // Add a new item and return the created record.
+// The nutrition fields are optional — callers can omit them.
 export async function addPantryItem(input: {
   name: string;
   quantity: number;
   unit: string;
+  brand?: string;
+  kcal?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 }): Promise<PantryItem> {
   const newItem: PantryItem = {
     id: crypto.randomUUID(), // built-in random unique id generator
     ownerId: getCurrentOwnerId(),
-    name: input.name,
-    quantity: input.quantity,
-    unit: input.unit,
+    ...input, // copies name, quantity, unit, and any nutrition fields provided
   };
   pantryItems.push(newItem);
   return newItem;
