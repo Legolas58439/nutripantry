@@ -1,23 +1,21 @@
 "use client";
 
-// "use client" makes this a CLIENT COMPONENT: it runs in the browser and can
-// use interactive features (onClick, onChange) and the useState hook.
-
 import { useState } from "react";
 import { addItemAction, searchFoodAction } from "./actions";
 import type { FoodResult } from "@/lib/nutrition/openfoodfacts";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function AddItemForm() {
-  // --- search state ---
+  // search state
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FoodResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
 
-  // --- the editable form fields ---
-  // We keep every field in state as a STRING (that's what <input> works with).
-  // Empty string means "blank". Storing them in state is what lets us pre-fill
-  // them from a search result AND let you edit them afterwards.
+  // editable form fields (all strings — that's what <input> works with)
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState("");
@@ -27,12 +25,12 @@ export default function AddItemForm() {
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
 
-  // A small helper so we don't write "value=… onChange=…" by hand every time.
-  // It returns the props every controlled text/number input needs.
+  // Returns the value/onChange props every controlled input needs (DRY helper).
   function field(value: string, setValue: (v: string) => void) {
     return {
       value,
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value),
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+        setValue(e.target.value),
     };
   }
 
@@ -51,8 +49,7 @@ export default function AddItemForm() {
     }
   }
 
-  // Clicking a search result PRE-FILLS the editable fields. You can then tweak
-  // any of them before saving — e.g. change "Frozen broccoli" kcal to raw.
+  // Picking a result pre-fills the editable fields; you can then tweak them.
   function choose(food: FoodResult) {
     setName(food.name);
     setBrand(food.brand);
@@ -64,7 +61,6 @@ export default function AddItemForm() {
     setQuery("");
   }
 
-  // Reset every field back to empty.
   function clearForm() {
     setName("");
     setQuantity("");
@@ -78,124 +74,179 @@ export default function AddItemForm() {
     setError("");
   }
 
-  // This runs when the form is submitted. It's a CLIENT function, so after the
-  // server action finishes saving, we can clear the form here. FormData carries
-  // all the named inputs' current values to addItemAction.
+  // Client form action: run the server action to save, then clear the form.
   async function handleAdd(formData: FormData) {
     await addItemAction(formData);
     clearForm();
   }
 
-  const inputClass =
-    "mt-1 rounded border bg-white px-2 py-1 text-zinc-900 placeholder:text-zinc-400";
-
   return (
-    <div className="mt-6 rounded-lg border bg-white p-4">
-      {/* ---- Search box (optional) ---- */}
-      <div className="flex items-end gap-2">
-        <label className="flex flex-1 flex-col text-sm text-zinc-700">
-          Search nutrition database (optional)
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleSearch();
-              }
-            }}
-            placeholder="e.g. broccoli"
-            className={inputClass}
-          />
-        </label>
-        <button
-          type="button"
-          onClick={handleSearch}
-          disabled={searching}
-          className="rounded bg-zinc-800 px-3 py-2 text-sm text-white hover:bg-zinc-700 disabled:opacity-50"
-        >
-          {searching ? "Searching…" : "Search"}
-        </button>
-      </div>
-
-      {error && <p className="mt-2 text-sm text-amber-700">{error}</p>}
-
-      {/* ---- Results list ---- */}
-      {results.length > 0 && (
-        <ul className="mt-2 divide-y rounded border">
-          {results.map((food, i) => (
-            <li key={i}>
-              <button
-                type="button"
-                onClick={() => choose(food)}
-                className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-zinc-50"
-              >
-                <span className="font-medium text-zinc-900">{food.name}</span>
-                <span className="text-xs text-zinc-500">
-                  {food.brand ? `${food.brand} · ` : ""}
-                  {food.kcal != null ? `${food.kcal} kcal` : "no kcal data"} / 100g
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* ---- The add form ---- */}
-      <form action={handleAdd} className="mt-4">
-        {/* Row 1: the basics */}
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col text-sm text-zinc-700">
-            Name
-            <input name="name" required placeholder="e.g. Broccoli" className={inputClass} {...field(name, setName)} />
-          </label>
-          <label className="flex flex-col text-sm text-zinc-700">
-            Quantity
-            <input name="quantity" type="number" min="0" step="any" required placeholder="500" className={`${inputClass} w-24`} {...field(quantity, setQuantity)} />
-          </label>
-          <label className="flex flex-col text-sm text-zinc-700">
-            Unit
-            <input name="unit" required placeholder="g" className={`${inputClass} w-28`} {...field(unit, setUnit)} />
-          </label>
+    <Card>
+      <CardContent className="space-y-4 pt-6">
+        {/* ---- Search box (optional) ---- */}
+        <div className="flex items-end gap-2">
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="food-search">
+              Search nutrition database (optional)
+            </Label>
+            <Input
+              id="food-search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSearch();
+                }
+              }}
+              placeholder="e.g. broccoli"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleSearch}
+            disabled={searching}
+          >
+            {searching ? "Searching…" : "Search"}
+          </Button>
         </div>
 
-        {/* Row 2: nutrition, all optional and editable (per 100g) */}
-        <p className="mt-4 text-xs font-medium uppercase tracking-wide text-zinc-400">
-          Nutrition per 100g (optional — edit freely)
-        </p>
-        <div className="mt-1 flex flex-wrap items-end gap-3">
-          <label className="flex flex-col text-sm text-zinc-700">
-            Brand
-            <input name="brand" placeholder="—" className={`${inputClass} w-40`} {...field(brand, setBrand)} />
-          </label>
-          <label className="flex flex-col text-sm text-zinc-700">
-            kcal
-            <input name="kcal" type="number" min="0" step="any" placeholder="34" className={`${inputClass} w-24`} {...field(kcal, setKcal)} />
-          </label>
-          <label className="flex flex-col text-sm text-zinc-700">
-            Protein
-            <input name="protein" type="number" min="0" step="any" placeholder="2.8" className={`${inputClass} w-24`} {...field(protein, setProtein)} />
-          </label>
-          <label className="flex flex-col text-sm text-zinc-700">
-            Carbs
-            <input name="carbs" type="number" min="0" step="any" placeholder="7" className={`${inputClass} w-24`} {...field(carbs, setCarbs)} />
-          </label>
-          <label className="flex flex-col text-sm text-zinc-700">
-            Fat
-            <input name="fat" type="number" min="0" step="any" placeholder="0.4" className={`${inputClass} w-24`} {...field(fat, setFat)} />
-          </label>
-        </div>
+        {error && <p className="text-sm text-amber-600">{error}</p>}
 
-        {/* Buttons */}
-        <div className="mt-4 flex gap-3">
-          <button type="submit" className="rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">
-            Add
-          </button>
-          <button type="button" onClick={clearForm} className="rounded border px-4 py-2 text-zinc-700 hover:bg-zinc-50">
-            Clear
-          </button>
-        </div>
-      </form>
-    </div>
+        {/* ---- Results ---- */}
+        {results.length > 0 && (
+          <ul className="divide-y rounded-md border">
+            {results.map((food, i) => (
+              <li key={i}>
+                <button
+                  type="button"
+                  onClick={() => choose(food)}
+                  className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-muted"
+                >
+                  <span className="font-medium">{food.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {food.brand ? `${food.brand} · ` : ""}
+                    {food.kcal != null ? `${food.kcal} kcal` : "no kcal data"} /
+                    100g
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* ---- The add form ---- */}
+        <form action={handleAdd} className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                name="name"
+                required
+                placeholder="e.g. Broccoli"
+                {...field(name, setName)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="quantity">Quantity</Label>
+              <Input
+                id="quantity"
+                name="quantity"
+                type="number"
+                min="0"
+                step="any"
+                required
+                placeholder="500"
+                {...field(quantity, setQuantity)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="unit">Unit</Label>
+              <Input
+                id="unit"
+                name="unit"
+                required
+                placeholder="g"
+                {...field(unit, setUnit)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Nutrition per 100g (optional — edit freely)
+            </p>
+            <div className="grid gap-4 sm:grid-cols-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="brand">Brand</Label>
+                <Input
+                  id="brand"
+                  name="brand"
+                  placeholder="—"
+                  {...field(brand, setBrand)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="kcal">kcal</Label>
+                <Input
+                  id="kcal"
+                  name="kcal"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="34"
+                  {...field(kcal, setKcal)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="protein">Protein</Label>
+                <Input
+                  id="protein"
+                  name="protein"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="2.8"
+                  {...field(protein, setProtein)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="carbs">Carbs</Label>
+                <Input
+                  id="carbs"
+                  name="carbs"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="7"
+                  {...field(carbs, setCarbs)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="fat">Fat</Label>
+                <Input
+                  id="fat"
+                  name="fat"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="0.4"
+                  {...field(fat, setFat)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button type="submit">Add item</Button>
+            <Button type="button" variant="outline" onClick={clearForm}>
+              Clear
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

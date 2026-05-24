@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import Nav from "@/components/Nav";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,21 +31,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        {/* A nav bar rendered on EVERY page, because it lives in the layout. */}
-        <header className="border-b bg-white">
-          <nav className="mx-auto flex max-w-4xl items-center gap-6 px-4 py-3">
-            <Link href="/" className="font-bold text-emerald-700">
-              Nutripantry
-            </Link>
-            <Link
-              href="/pantry"
-              className="text-sm text-zinc-600 hover:text-zinc-900"
-            >
-              Pantry
-            </Link>
-          </nav>
-        </header>
+        <Nav />
         {children}
+        {/* Renders toast notifications (e.g. "Logged 200g chicken breast"). */}
+        <Toaster richColors position="top-center" />
       </body>
     </html>
   );

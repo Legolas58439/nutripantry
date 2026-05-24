@@ -1,95 +1,109 @@
 import { listPantry } from "@/lib/data/pantry";
 import { deleteItemAction } from "./actions";
 import AddItemForm from "./AddItemForm";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-// Tell Next.js to render this page fresh on every request instead of
-// pre-rendering it once at build time. The pantry contents live in the
-// database and change as you add/remove items, so we always want current data.
+// Render fresh on every request — pantry contents live in the database.
 export const dynamic = "force-dynamic";
 
-// THE PANTRY PAGE.
-//
-// This is a React Server Component (the default in the App Router). Because it
-// runs on the server, it can be `async` and `await` data directly — no useState,
-// no useEffect, no loading spinner plumbing. By the time the HTML reaches the
-// browser, the data is already in it.
-//
-// Putting this file at app/pantry/page.tsx is what creates the URL "/pantry".
 export default async function PantryPage() {
   const items = await listPantry();
 
   return (
-    <main className="mx-auto max-w-4xl p-8">
-      <h1 className="text-3xl font-bold text-emerald-700">Pantry</h1>
-      <p className="mt-1 text-zinc-600">What you have on hand.</p>
+    <main className="mx-auto max-w-5xl space-y-8 p-6 sm:p-8">
+      <div>
+        <h1 className="text-3xl font-bold text-emerald-700">Pantry</h1>
+        <p className="mt-1 text-muted-foreground">What you have on hand.</p>
+      </div>
 
-      {/* The add form */}
       <AddItemForm />
 
-      {/* The list of items. Nutrition columns are per 100g (from OpenFoodFacts). */}
-      <table className="mt-8 w-full border-collapse text-left">
-        <thead>
-          <tr className="border-b text-sm uppercase text-zinc-500">
-            <th className="py-2">Name</th>
-            <th className="py-2">Qty</th>
-            <th className="py-2">Unit</th>
-            <th className="py-2 text-right">kcal</th>
-            <th className="py-2 text-right">Protein</th>
-            <th className="py-2 text-right">Carbs</th>
-            <th className="py-2 text-right">Fat</th>
-            <th className="py-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.length === 0 ? (
-            <tr>
-              <td colSpan={8} className="py-6 text-center text-zinc-400">
-                Nothing in your pantry yet. Add something above.
-              </td>
-            </tr>
-          ) : (
-            // .map() turns each item in the array into a table row.
-            // The `key` prop helps React track rows efficiently — always give
-            // lists a stable, unique key (the item id is perfect).
-            items.map((item) => (
-              <tr key={item.id} className="border-b align-top">
-                <td className="py-2 font-medium text-zinc-900">
-                  {item.name}
-                  {/* Show the brand under the name, if we have one. */}
-                  {item.brand ? (
-                    <span className="block text-xs font-normal text-zinc-400">
-                      {item.brand}
-                    </span>
-                  ) : null}
-                </td>
-                <td className="py-2 text-zinc-700">{item.quantity}</td>
-                <td className="py-2 text-zinc-700">{item.unit}</td>
-                {/* ?? "—" means: if the value is missing, show a dash instead. */}
-                <td className="py-2 text-right text-zinc-700">{item.kcal ?? "—"}</td>
-                <td className="py-2 text-right text-zinc-700">{item.protein ?? "—"}</td>
-                <td className="py-2 text-right text-zinc-700">{item.carbs ?? "—"}</td>
-                <td className="py-2 text-right text-zinc-700">{item.fat ?? "—"}</td>
-                <td className="py-2 text-right">
-                  {/* A tiny form whose only job is to submit this item's id
-                      to the delete action. The id rides along in a hidden input. */}
-                  <form action={deleteItemAction}>
-                    <input type="hidden" name="id" value={item.id} />
-                    <button
-                      type="submit"
-                      className="text-sm text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      <Card>
+        <CardHeader>
+          <CardTitle>Items</CardTitle>
+          <CardDescription>Nutrition values are per 100g.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead className="text-right">Qty</TableHead>
+                <TableHead>Unit</TableHead>
+                <TableHead className="text-right">kcal</TableHead>
+                <TableHead className="text-right">Protein</TableHead>
+                <TableHead className="text-right">Carbs</TableHead>
+                <TableHead className="text-right">Fat</TableHead>
+                <TableHead className="w-0"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="py-10 text-center text-muted-foreground"
+                  >
+                    Nothing in your pantry yet. Add something above.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">
+                      {item.name}
+                      {item.brand ? (
+                        <span className="block text-xs font-normal text-muted-foreground">
+                          {item.brand}
+                        </span>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className="text-right">{item.quantity}</TableCell>
+                    <TableCell>{item.unit}</TableCell>
+                    <TableCell className="text-right">{item.kcal ?? "—"}</TableCell>
+                    <TableCell className="text-right">
+                      {item.protein ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-right">{item.carbs ?? "—"}</TableCell>
+                    <TableCell className="text-right">{item.fat ?? "—"}</TableCell>
+                    <TableCell className="text-right">
+                      <form action={deleteItemAction}>
+                        <input type="hidden" name="id" value={item.id} />
+                        <Button
+                          type="submit"
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          Delete
+                        </Button>
+                      </form>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-      <p className="mt-3 text-xs text-zinc-400">
-        Nutrition values are per 100g, sourced from{" "}
+      <p className="text-xs text-muted-foreground">
+        Nutrition data sourced from{" "}
         <a
           href="https://world.openfoodfacts.org"
           className="underline"
