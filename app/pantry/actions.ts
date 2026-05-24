@@ -1,8 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { addPantryItem, deletePantryItem } from "@/lib/data/pantry";
+import {
+  addPantryItem,
+  deletePantryItem,
+  getPantryItem,
+  updatePantryItemQuantity,
+} from "@/lib/data/pantry";
+import { logConsumption } from "@/lib/data/consumption";
 import { searchFood, type FoodResult } from "@/lib/nutrition/openfoodfacts";
+
+// Round to one decimal place — keeps logged macros tidy.
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
 
 // Called from the browser (the search box) to look up foods on OpenFoodFacts.
 // The actual network request runs here, on the server, then the results are
@@ -62,4 +73,41 @@ export async function deleteItemAction(formData: FormData) {
 
   await deletePantryItem(id);
   revalidatePath("/pantry");
+}
+
+// "Eat" a number of grams of a pantry item: record it in the food diary and
+// deduct it from pantry stock.
+export async function eatPantryItemAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const grams = Number(formData.get("grams") ?? 0);
+  if (!id || !Number.isFinite(grams) || grams <= 0) return;
+
+  const item = await getPantryItem(id);
+  if (!item) return;
+
+  // Nutrition is stored per 100g, so scale by grams/100.
+  const factor = grams / 100;
+  await logConsumption({
+    name: item.name,
+    brand: item.brand,
+    grams,
+    kcal: round1((item.kcal ?? 0) * factor),
+    protein: round1((item.protein ?? 0) * factor),
+    carbs: round1((item.carbs ?? 0) * factor),
+    fat: round1((item.fat ?? 0) * factor),
+    pantryItemId: item.id,
+  });
+
+  // Deduct stock only when the unit is gram-based (we can't safely convert
+  // "cans" or "heads" to grams). Clamp at zero so quantity never goes negative.
+  const unit = item.unit.trim().toLowerCase();
+  let gramsToDeduct = 0;
+  if (unit === "g" || unit === "gram" || unit === "grams") gramsToDeduct = grams;
+  else if (unit === "kg") gramsToDeduct = grams / 1000;
+  if (gramsToDeduct > 0) {
+    await updatePantryItemQuantity(id, Math.max(0, item.quantity - gramsToDeduct));
+  }
+
+  revalidatePath("/pantry");
+  revalidatePath("/tracker");
 }

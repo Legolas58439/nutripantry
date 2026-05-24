@@ -1,6 +1,7 @@
 import { listPantry } from "@/lib/data/pantry";
 import { deleteItemAction } from "./actions";
 import AddItemForm from "./AddItemForm";
+import EatDialog from "./EatDialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -82,17 +83,28 @@ export default async function PantryPage() {
                     <TableCell className="text-right">{item.carbs ?? "—"}</TableCell>
                     <TableCell className="text-right">{item.fat ?? "—"}</TableCell>
                     <TableCell className="text-right">
-                      <form action={deleteItemAction}>
-                        <input type="hidden" name="id" value={item.id} />
-                        <Button
-                          type="submit"
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                        >
-                          Delete
-                        </Button>
-                      </form>
+                      <div className="flex justify-end gap-1">
+                        <EatDialog
+                          id={item.id}
+                          name={item.name}
+                          unit={item.unit}
+                          kcal={item.kcal ?? null}
+                          protein={item.protein ?? null}
+                          carbs={item.carbs ?? null}
+                          fat={item.fat ?? null}
+                        />
+                        <form action={deleteItemAction}>
+                          <input type="hidden" name="id" value={item.id} />
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            Delete
+                          </Button>
+                        </form>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

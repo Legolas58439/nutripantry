@@ -46,3 +46,21 @@ export async function deletePantryItem(id: string): Promise<void> {
     where: { id, ownerId },
   });
 }
+
+// Fetch a single item by id, scoped to the current owner (or null if missing).
+export async function getPantryItem(id: string): Promise<PantryItem | null> {
+  const ownerId = getCurrentOwnerId();
+  return prisma.pantryItem.findFirst({ where: { id, ownerId } });
+}
+
+// Set an item's quantity (used when "eating" deducts stock). Owner-scoped.
+export async function updatePantryItemQuantity(
+  id: string,
+  quantity: number,
+): Promise<void> {
+  const ownerId = getCurrentOwnerId();
+  await prisma.pantryItem.updateMany({
+    where: { id, ownerId },
+    data: { quantity },
+  });
+}
