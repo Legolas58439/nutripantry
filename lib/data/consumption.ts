@@ -19,7 +19,7 @@ export type ConsumptionInput = {
 
 // Record one "I ate this" event.
 export async function logConsumption(input: ConsumptionInput) {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   return prisma.consumptionLog.create({
     data: {
       ownerId,
@@ -38,7 +38,7 @@ export async function logConsumption(input: ConsumptionInput) {
 
 // All entries for the current owner within [from, to), newest first.
 export async function listConsumption(range: { from: Date; to: Date }) {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   return prisma.consumptionLog.findMany({
     where: {
       ownerId,
@@ -50,7 +50,7 @@ export async function listConsumption(range: { from: Date; to: Date }) {
 
 // Delete one entry — owner-scoped (can't delete someone else's row).
 export async function deleteConsumption(id: string) {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   await prisma.consumptionLog.deleteMany({ where: { id, ownerId } });
 }
 

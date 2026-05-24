@@ -1,13 +1,16 @@
-// The AUTH SEAM.
+import { auth } from "@/auth";
+
+// THE AUTH SEAM — now backed by real sign-in.
 //
-// Right now Nutripantry has no login, so everything belongs to a single
-// pretend user called "local". Every data function asks this helper "who is
-// the current owner?" before reading or writing.
-//
-// When we add real authentication later, THIS is the only function that
-// changes — it'll return the signed-in user's id instead of "local", and the
-// entire app instantly becomes per-user. That's why we route every query
-// through it from day one.
-export function getCurrentOwnerId(): string {
-  return "local";
+// Every data function asks this helper "who is the current owner?". It used to
+// return the constant "local"; now it returns the signed-in user's id. Because
+// every query already routes through here, flipping this one function made the
+// whole app per-user. (Protected routes require a session via middleware, so in
+// practice a session always exists when this runs.)
+export async function getCurrentOwnerId(): Promise<string> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Not authenticated");
+  }
+  return session.user.id;
 }

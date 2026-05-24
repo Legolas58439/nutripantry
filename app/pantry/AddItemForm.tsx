@@ -18,7 +18,6 @@ export default function AddItemForm() {
   // editable form fields (all strings — that's what <input> works with)
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [unit, setUnit] = useState("");
   const [brand, setBrand] = useState("");
   const [kcal, setKcal] = useState("");
   const [protein, setProtein] = useState("");
@@ -64,7 +63,6 @@ export default function AddItemForm() {
   function clearForm() {
     setName("");
     setQuantity("");
-    setUnit("");
     setBrand("");
     setKcal("");
     setProtein("");
@@ -138,19 +136,19 @@ export default function AddItemForm() {
 
         {/* ---- The add form ---- */}
         <form action={handleAdd} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
                 name="name"
                 required
-                placeholder="e.g. Broccoli"
+                placeholder="e.g. Chicken breast"
                 {...field(name, setName)}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="quantity">Quantity</Label>
+              <Label htmlFor="quantity">Amount (g)</Label>
               <Input
                 id="quantity"
                 name="quantity"
@@ -158,18 +156,8 @@ export default function AddItemForm() {
                 min="0"
                 step="any"
                 required
-                placeholder="500"
+                placeholder="1000"
                 {...field(quantity, setQuantity)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="unit">Unit</Label>
-              <Input
-                id="unit"
-                name="unit"
-                required
-                placeholder="g"
-                {...field(unit, setUnit)}
               />
             </div>
           </div>

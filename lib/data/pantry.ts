@@ -12,7 +12,7 @@ import type { PantryItem } from "./types";
 
 // Return every pantry item belonging to the current owner, newest first.
 export async function listPantry(): Promise<PantryItem[]> {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   return prisma.pantryItem.findMany({
     where: { ownerId }, // only this owner's rows
     orderBy: { createdAt: "desc" },
@@ -30,7 +30,7 @@ export async function addPantryItem(input: {
   carbs?: number;
   fat?: number;
 }): Promise<PantryItem> {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   return prisma.pantryItem.create({
     data: { ownerId, ...input }, // Prisma generates the id and createdAt for us
   });
@@ -41,7 +41,7 @@ export async function addPantryItem(input: {
 // ownerId. That ownership check is what stops one user deleting another's row
 // once we add accounts.
 export async function deletePantryItem(id: string): Promise<void> {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   await prisma.pantryItem.deleteMany({
     where: { id, ownerId },
   });
@@ -49,7 +49,7 @@ export async function deletePantryItem(id: string): Promise<void> {
 
 // Fetch a single item by id, scoped to the current owner (or null if missing).
 export async function getPantryItem(id: string): Promise<PantryItem | null> {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   return prisma.pantryItem.findFirst({ where: { id, ownerId } });
 }
 
@@ -58,7 +58,7 @@ export async function updatePantryItemQuantity(
   id: string,
   quantity: number,
 ): Promise<void> {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   await prisma.pantryItem.updateMany({
     where: { id, ownerId },
     data: { quantity },

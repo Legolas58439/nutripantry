@@ -44,8 +44,7 @@ export default async function PantryPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead className="text-right">Qty</TableHead>
-                <TableHead>Unit</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
                 <TableHead className="text-right">kcal</TableHead>
                 <TableHead className="text-right">Protein</TableHead>
                 <TableHead className="text-right">Carbs</TableHead>
@@ -57,7 +56,7 @@ export default async function PantryPage() {
               {items.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={7}
                     className="py-10 text-center text-muted-foreground"
                   >
                     Nothing in your pantry yet. Add something above.
@@ -74,8 +73,7 @@ export default async function PantryPage() {
                         </span>
                       ) : null}
                     </TableCell>
-                    <TableCell className="text-right">{item.quantity}</TableCell>
-                    <TableCell>{item.unit}</TableCell>
+                    <TableCell className="text-right">{item.quantity} g</TableCell>
                     <TableCell className="text-right">{item.kcal ?? "—"}</TableCell>
                     <TableCell className="text-right">
                       {item.protein ?? "—"}
@@ -87,7 +85,6 @@ export default async function PantryPage() {
                         <EatDialog
                           id={item.id}
                           name={item.name}
-                          unit={item.unit}
                           kcal={item.kcal ?? null}
                           protein={item.protein ?? null}
                           carbs={item.carbs ?? null}

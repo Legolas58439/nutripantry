@@ -20,7 +20,6 @@ import {
 type Props = {
   id: string;
   name: string;
-  unit: string;
   kcal: number | null;
   protein: number | null;
   carbs: number | null;
@@ -32,7 +31,6 @@ const round1 = (n: number) => Math.round(n * 10) / 10;
 export default function EatDialog({
   id,
   name,
-  unit,
   kcal,
   protein,
   carbs,
@@ -50,10 +48,6 @@ export default function EatDialog({
     carbs: round1((carbs ?? 0) * factor),
     fat: round1((fat ?? 0) * factor),
   };
-
-  const gramBased = ["g", "gram", "grams", "kg"].includes(
-    unit.trim().toLowerCase(),
-  );
 
   async function handleEat(formData: FormData) {
     await eatPantryItemAction(formData);
@@ -102,13 +96,6 @@ export default function EatDialog({
             <Stat label="Carbs" value={preview.carbs} />
             <Stat label="Fat" value={preview.fat} />
           </div>
-
-          {!gramBased && (
-            <p className="text-xs text-amber-600">
-              This item&apos;s unit is &quot;{unit}&quot;, not grams — the
-              nutrition will be logged, but stock won&apos;t be auto-adjusted.
-            </p>
-          )}
 
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>

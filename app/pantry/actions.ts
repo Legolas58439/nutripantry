@@ -44,11 +44,12 @@ export async function addItemAction(formData: FormData) {
   // It can be null, so we default to "" and trim whitespace.
   const name = String(formData.get("name") ?? "").trim();
   const quantity = Number(formData.get("quantity") ?? 0);
-  const unit = String(formData.get("unit") ?? "").trim();
+  // Everything is gram-based now, so the unit is always grams.
+  const unit = "g";
 
   // Hand-written validation. (In a later phase we'll swap this for a library
   // called Zod, but doing it by hand first shows you what validation actually is.)
-  if (!name || Number.isNaN(quantity) || quantity <= 0 || !unit) {
+  if (!name || Number.isNaN(quantity) || quantity <= 0) {
     return; // ignore an invalid submission for now
   }
 
@@ -98,15 +99,10 @@ export async function eatPantryItemAction(formData: FormData) {
     pantryItemId: item.id,
   });
 
-  // Deduct stock only when the unit is gram-based (we can't safely convert
-  // "cans" or "heads" to grams). Clamp at zero so quantity never goes negative.
-  const unit = item.unit.trim().toLowerCase();
-  let gramsToDeduct = 0;
-  if (unit === "g" || unit === "gram" || unit === "grams") gramsToDeduct = grams;
-  else if (unit === "kg") gramsToDeduct = grams / 1000;
-  if (gramsToDeduct > 0) {
-    await updatePantryItemQuantity(id, Math.max(0, item.quantity - gramsToDeduct));
-  }
+  // Pantry quantities are in grams, so deduct the grams eaten directly. Round to
+  // one decimal to avoid floating-point noise, and clamp at zero.
+  const newQuantity = Math.max(0, Math.round((item.quantity - grams) * 10) / 10);
+  await updatePantryItemQuantity(id, newQuantity);
 
   revalidatePath("/pantry");
   revalidatePath("/tracker");

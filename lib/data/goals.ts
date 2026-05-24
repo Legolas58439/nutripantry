@@ -12,14 +12,14 @@ export type GoalInput = {
 
 // Return the current owner's goals, or null if they haven't set any.
 export async function getGoals() {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   return prisma.nutritionGoal.findUnique({ where: { ownerId } });
 }
 
 // Create or update the owner's goals. `upsert` = "update if it exists, else
 // create" — perfect for a single settings row keyed by ownerId.
 export async function saveGoals(input: GoalInput) {
-  const ownerId = getCurrentOwnerId();
+  const ownerId = await getCurrentOwnerId();
   const data = {
     kcal: input.kcal ?? null,
     protein: input.protein ?? null,

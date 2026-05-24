@@ -16,30 +16,28 @@ export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <header className="border-b bg-background">
-      <nav className="mx-auto flex max-w-5xl items-center gap-1 px-4 py-3">
-        <Link href="/" className="mr-4 text-lg font-bold text-emerald-700">
-          Nutripantry
-        </Link>
-        {links.map((link) => {
-          const active =
-            pathname === link.href || pathname.startsWith(link.href + "/");
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                active
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              )}
-            >
-              {link.label}
-            </Link>
-          );
-        })}
-      </nav>
-    </header>
+    <nav className="flex items-center gap-1">
+      <Link href="/" className="mr-2 text-lg font-bold text-emerald-700">
+        Nutripantry
+      </Link>
+      {links.map((link) => {
+        const active =
+          pathname === link.href || pathname.startsWith(link.href + "/");
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={cn(
+              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              active
+                ? "bg-emerald-50 text-emerald-700"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            {link.label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
